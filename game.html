@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mario-Style Chinese Quiz Game</title>
+
+<style>
+body{
+  margin:0;
+  background:linear-gradient(#5ee7df,#b490ca);
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+#container{
+  width:900px;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 30px 60px rgba(0,0,0,.2);
+  overflow:hidden;
+}
+
+/* HEADER */
+#topbar{
+  background:#ff4757;
+  color:white;
+  padding:14px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:18px;
+}
+
+/* GAME */
+canvas{
+  display:block;
+  background:linear-gradient(#87ceeb,#e0f6ff);
+}
+
+/* QUIZ */
+#quizBox{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.quiz{
+  background:white;
+  width:420px;
+  padding:25px;
+  border-radius:16px;
+  text-align:center;
+}
+
+.quiz h3{margin-bottom:15px;}
+
+.quiz button{
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#ff4757;
+  color:white;
+  cursor:pointer;
+  font-size:16px;
+}
+
+.quiz button:hover{
+  background:#e84118;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+  <div id="topbar">
+    ⭐ Score: <span id="score">0</span>
+    🌸 Level: <span id="level">1</span>
+    <button onclick="restart()">🔄 Restart</button>
+  </div>
+
+  <canvas id="game" width="900" height="420"></canvas>
+</div>
+
+<!-- QUIZ -->
+<div id="quizBox">
+  <div class="quiz">
+    <h3 id="question"></h3>
+    <div id="choices"></div>
+  </div>
+</div>
+
+<script>
+/* ======================
+   QUESTIONS (SHUFFLED)
+====================== */
+const allQuestions = [
+ {q:"周末你有空___？", c:["呢","吗","就","很"], a:1},
+ {q:"我们___公共汽车去学校。", c:["骑","坐","打","走"], a:1},
+ {q:"我给你___电话。", c:["骑","坐","打","走"], a:2},
+ {q:"你的手机___码是多少？", c:["房间","电话","号码","号楼"], a:2},
+ {q:"骑自行车很___。", c:["慢","快","多","少"], a:1}
+];
+
+let quiz=[], qIndex=0;
+
+/* ======================
+   GAME STATE
+====================== */
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let score=0, level=1, inQuiz=false;
+
+/* PLAYER */
+const player={x:60,y:320,w:28,h:28,vy:0,onGround:false};
+
+/* BLOCKS */
+let blocks=[];
+
+const gravity=0.6;
+
+/* INPUT */
+const keys={};
+onkeydown=e=>keys[e.key]=true;
+onkeyup=e=>keys[e.key]=false;
+
+/* ======================
+   UTIL
+====================== */
+function shuffle(arr){
+  return arr.sort(()=>Math.random()-0.5);
+}
+
+/* ======================
+   RESET / RESTART
+====================== */
+function restart(){
+  score=0; level=1; qIndex=0;
+  quiz=shuffle([...allQuestions]);
+  initLevel();
+  document.getElementById("score").innerText=0;
+  document.getElementById("level").innerText=1;
+}
+
+function initLevel(){
+  player.x=60; player.y=320; player.vy=0;
+  blocks=[
+    {x:300,y:240,hit:false},
+    {x:450,y:240,hit:false},
+    {x:600,y:240,hit:false}
+  ];
+}
+
+/* ======================
+   GAME LOOP
+====================== */
+function update(){
+  if(inQuiz) return;
+
+  if(keys["ArrowRight"]) player.x+=3;
+  if(keys["ArrowLeft"]) player.x-=3;
+  if(keys["ArrowUp"]&&player.onGround){
+    player.vy=-10; player.onGround=false;
+  }
+
+  player.vy+=gravity;
+  player.y+=player.vy;
+
+  if(player.y+player.h>360){
+    player.y=360-player.h;
+    player.vy=0; player.onGround=true;
+  }
+
+  blocks.forEach(b=>{
+    if(!b.hit &&
+       player.vy<0 &&
+       player.y<=b.y+24 &&
+       player.y>=b.y+10 &&
+       player.x+player.w>b.x &&
+       player.x<b.x+24){
+        b.hit=true;
+        startQuiz();
+    }
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,900,420);
+
+  ctx.fillStyle="#5cb85c";
+  ctx.fillRect(0,360,900,60);
+
+  ctx.font="28px serif";
+  ctx.fillText("🧑‍🎓",player.x,player.y+26);
+
+  ctx.font="18px monospace";
+  blocks.forEach(b=>{
+    if(!b.hit){
+      ctx.fillStyle="#ffcc00";
+      ctx.fillRect(b.x,b.y,24,24);
+      ctx.fillStyle="#000";
+      ctx.fillText("?",b.x+7,b.y+18);
+    }
+  });
+}
+
+/* ======================
+   QUIZ
+====================== */
+function startQuiz(){
+  if(qIndex>=quiz.length){ nextLevel(); return; }
+
+  inQuiz=true;
+  quizBox.style.display="flex";
+  const q=quiz[qIndex];
+  question.innerText=q.q;
+
+  choices.innerHTML="";
+  q.c.forEach((c,i)=>{
+    choices.innerHTML+=
+      `<button onclick="answer(${i})">${c}</button>`;
+  });
+}
+
+function answer(i){
+  if(i===quiz[qIndex].a){
+    score++;
+    document.getElementById("score").innerText=score;
+  }
+  qIndex++;
+  inQuiz=false;
+  quizBox.style.display="none";
+}
+
+function nextLevel(){
+  level++;
+  qIndex=0;
+  quiz=shuffle([...allQuestions]);
+  initLevel();
+  document.getElementById("level").innerText=level;
+}
+
+/* ======================
+   LOOP
+====================== */
+restart();
+(function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>

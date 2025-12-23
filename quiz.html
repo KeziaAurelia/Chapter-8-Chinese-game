@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Learning Game Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0b1f 0%, #1a1333 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #ffffff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #9370db, #ba55d3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #b8b0e0;
+            font-size: 1.2rem;
+        }
+        
+        .game-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .game-btn {
+            background: linear-gradient(135deg, #2a2352, #1f1940);
+            border: 2px solid rgba(147, 112, 219, 0.3);
+            color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            min-width: 180px;
+            text-align: center;
+        }
+        
+        .game-btn:hover {
+            transform: translateY(-5px);
+            border-color: #ba55d3;
+            box-shadow: 0 10px 20px rgba(147, 112, 219, 0.3);
+        }
+        
+        .game-btn.active {
+            background: linear-gradient(135deg, #9370db, #8a2be2);
+            border-color: #9370db;
+            box-shadow: 0 10px 20px rgba(147, 112, 219, 0.4);
+        }
+        
+        .game-container {
+            background: linear-gradient(145deg, #1e1a3c, #15102a);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(147, 112, 219, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            display: none;
+        }
+        
+        .game-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Common game styles */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(147, 112, 219, 0.3);
+        }
+        
+        .game-title {
+            font-size: 1.8rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        
+        .score-display {
+            display: flex;
+            gap: 20px;
+            background: rgba(42, 35, 82, 0.5);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(147, 112, 219, 0.2);
+        }
+        
+        .score-item {
+            text-align: center;
+        }
+        
+        .score-label {
+            color: #b8b0e0;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .question-container {
+            background: linear-gradient(145deg, #2a2352, #1f1940);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(147, 112, 219, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .question-text {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .pinyin {
+            color: #b8b0e0;
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        /* Multiple choice options */
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            background: linear-gradient(145deg, #2a2352, #1f1940);
+            border: 2px solid rgba(147, 112, 219, 0.3);
+            border-radius: 12px;
+            padding: 25px 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option:hover {
+            border-color: #ba55d3;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(147, 112, 219, 0.3);
+        }
+        
+        .option.selected {
+            border-color: #9b59b6;
+            background: rgba(155, 89, 182, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+        
+        /* Fill in the blank styles */
+        .blank-container {
+            background: linear-gradient(145deg, #2a2352, #1f1940);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(147, 112, 219, 0.3);
+        }
+        
+        .sentence {
+            font-size: 1.8rem;
+            color: #ffffff;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 100px;
+            height: 50px;
+            background: rgba(42, 35, 82, 0.5);
+            border: 2px dashed rgba(147, 112, 219, 0.5);
+            border-radius: 8px;
+            margin: 0 10px;
+            vertical-align: middle;
+        }
+        
+        .blank.filled {
+            background: rgba(155, 89, 182, 0.3);
+            border: 2px solid #9b59b6;
+        }
+        
+        .blank-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .blank-option {
+            background: linear-gradient(135deg, #9370db, #8a2be2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .blank-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(147, 112, 219, 0.4);
+        }
+        
+        .blank-option.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Audio controls */
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .audio-btn {
+            background: linear-gradient(135deg, #9370db, #8a2be2);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .audio-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(147, 112, 219, 0.4);
+        }
+        
+        .audio-btn:disabled {
+            background: #2a2352;
+            color: #7a72a3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .action-btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            min-width: 180px;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            background: #2a2352;
+            color: #7a72a3;
+            cursor: not-allowed;
+        }
+        
+        .next-btn {
+            background: linear-gradient(135deg, #9370db, #8a2be2);
+            color: white;
+        }
+        
+        .next-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(147, 112, 219, 0.4);
+        }
+        
+        .next-btn:disabled {
+            background: #2a2352;
+            color: #7a72a3;
+            cursor: not-allowed;
+        }
+        
+        /* Feedback */
+        .feedback {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            display: none;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .feedback.correct {
+            background: rgba(155, 89, 182, 0.25);
+            color: #dda0dd;
+            border: 2px solid #9b59b6;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background: rgba(147, 112, 219, 0.25);
+            color: #ba55d3;
+            border: 2px solid #9370db;
+            display: block;
+        }
+        
+        /* Fill in multiple blanks styles */
+        .multiple-blanks-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .blanks-section {
+            background: linear-gradient(145deg, #2a2352, #1f1940);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(147, 112, 219, 0.3);
+        }
+        
+        .blanks-title {
+            font-size: 1.2rem;
+            color: #b8b0e0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .blanks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        
+        .blank-slot {
+            height: 60px;
+            background: rgba(42, 35, 82, 0.5);
+            border: 2px dashed rgba(147, 112, 219, 0.5);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .blank-slot.filled {
+            background: rgba(155, 89, 182, 0.3);
+            border: 2px solid #9b59b6;
+            color: #ffffff;
+        }
+        
+        /* Decorative elements */
+        .decoration {
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(147, 112, 219, 0.1), transparent);
+            filter: blur(40px);
+            z-index: -1;
+        }
+        
+        .decoration-1 {
+            top: -80px;
+            left: -80px;
+        }
+        
+        .decoration-2 {
+            bottom: -80px;
+            right: -80px;
+            background: radial-gradient(circle, rgba(155, 89, 182, 0.1), transparent);
+        }
+        
+        @media (max-width: 768px) {
+            .game-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .game-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .multiple-blanks-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .blank-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .blank-option {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            .sentence {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+    
+    <div class="header">
+        <h1>中文学习游戏套件</h1>
+        <p class="subtitle">Chinese Learning Game Suite - Practice Listening, Reading, and Vocabulary</p>
+    </div>
+    
+    <div class="game-selector">
+        <button class="game-btn active" data-game="listening">🎧 听力游戏 (Listening)</button>
+        <button class="game-btn" data-game="vocab">📚 词汇练习 (Vocabulary)</button>
+        <button class="game-btn" data-game="fillblank">✍️ 填空练习 (Fill in Blank)</button>
+        <button class="game-btn" data-game="multiblank">🧩 多项填空 (Multiple Blanks)</button>
+    </div>
+    
+    <!-- Listening Game -->
+    <div class="game-container active" id="listening-game">
+        <div class="game-header">
+            <h2 class="game-title">中文数字听力游戏</h2>
+            <div class="score-display">
+                <div class="score-item">
+                    <div class="score-label">正确</div>
+                    <div class="score-value" id="listening-correct">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">尝试</div>
+                    <div class="score-value" id="listening-attempts">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">准确率</div>
+                    <div class="score-value" id="listening-accuracy">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-text">
+                小明: 请问，你的电话号码是多少？<br>
+                小红: 我的电话号码是<span id="listening-target">_____</span>。
+            </div>
+            <div class="pinyin" id="listening-pinyin"></div>
+        </div>
+        
+        <div class="audio-controls">
+            <button id="play-conversation" class="audio-btn">
+                <span>▶</span> 播放对话
+            </button>
+            <button id="play-number" class="audio-btn">
+                <span>🔊</span> 重复数字
+            </button>
+        </div>
+        
+        <div class="options-container" id="listening-options"></div>
+        
+        <div class="action-buttons">
+            <button id="listening-submit" class="action-btn submit-btn" disabled>提交答案</button>
+            <button id="listening-next" class="action-btn next-btn" disabled>下一题</button>
+        </div>
+        
+        <div id="listening-feedback" class="feedback"></div>
+    </div>
+    
+    <!-- Vocabulary Game -->
+    <div class="game-container" id="vocab-game">
+        <div class="game-header">
+            <h2 class="game-title">汉字词汇识别游戏</h2>
+            <div class="score-display">
+                <div class="score-item">
+                    <div class="score-label">正确</div>
+                    <div class="score-value" id="vocab-correct">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">尝试</div>
+                    <div class="score-value" id="vocab-attempts">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">准确率</div>
+                    <div class="score-value" id="vocab-accuracy">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-text" id="vocab-question"></div>
+            <div class="pinyin" id="vocab-pinyin"></div>
+        </div>
+        
+        <div class="options-container" id="vocab-options"></div>
+        
+        <div class="action-buttons">
+            <button id="vocab-submit" class="action-btn submit-btn" disabled>提交答案</button>
+            <button id="vocab-next" class="action-btn next-btn" disabled>下一题</button>
+        </div>
+        
+        <div id="vocab-feedback" class="feedback"></div>
+    </div>
+    
+    <!-- Fill in Blank Game -->
+    <div class="game-container" id="fillblank-game">
+        <div class="game-header">
+            <h2 class="game-title">填空练习</h2>
+            <div class="score-display">
+                <div class="score-item">
+                    <div class="score-label">正确</div>
+                    <div class="score-value" id="fillblank-correct">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">尝试</div>
+                    <div class="score-value" id="fillblank-attempts">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">准确率</div>
+                    <div class="score-value" id="fillblank-accuracy">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="blank-container">
+            <div class="sentence" id="fillblank-sentence">
+                我明天要坐<span class="blank" data-correct="公共汽车"></span>去学校。
+            </div>
+            <div class="blank-options" id="fillblank-choices"></div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="fillblank-submit" class="action-btn submit-btn" disabled>提交答案</button>
+            <button id="fillblank-next" class="action-btn next-btn" disabled>下一题</button>
+        </div>
+        
+        <div id="fillblank-feedback" class="feedback"></div>
+    </div>
+    
+    <!-- Multiple Blanks Game -->
+    <div class="game-container" id="multiblank-game">
+        <div class="game-header">
+            <h2 class="game-title">多项填空练习</h2>
+            <div class="score-display">
+                <div class="score-item">
+                    <div class="score-label">正确</div>
+                    <div class="score-value" id="multiblank-correct">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">尝试</div>
+                    <div class="score-value" id="multiblank-attempts">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">准确率</div>
+                    <div class="score-value" id="multiblank-accuracy">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="multiple-blanks-container">
+            <div class="blanks-section">
+                <div class="blanks-title">将词语拖到正确的位置：</div>
+                <div class="blanks-grid" id="multiblank-slots">
+                    <div class="blank-slot" data-correct="怎么"></div>
+                    <div class="blank-slot" data-correct="走"></div>
+                    <div class="blank-slot" data-correct="路"></div>
+                    <div class="blank-slot" data-correct="到"></div>
+                </div>
+            </div>
+            
+            <div class="blanks-section">
+                <div class="blanks-title">可用词语：</div>
+                <div class="blank-options" id="multiblank-choices"></div>
+            </div>
+        </div>
+        
+        <div class="sentence" id="multiblank-sentence">
+            我<span class="blank filled">怎么</span>去学校？我<span class="blank filled">走</span>这条<span class="blank filled">路</span>就能<span class="blank filled">到</span>。
+        </div>
+        
+        <div class="action-buttons">
+            <button id="multiblank-submit" class="action-btn submit-btn">检查答案</button>
+            <button id="multiblank-next" class="action-btn next-btn" disabled>下一题</button>
+        </div>
+        
+        <div id="multiblank-feedback" class="feedback"></div>
+    </div>
+
+    <script>
+        // Vocabulary data from your code
+        const vocabulary = {
+            "weekend": "周末",
+            "modal particle (a)": "啊",
+            "but / however": "不过",
+            "how": "怎么",
+            "to go / walk": "走",
+            "route": "路",
+            "and": "和",
+            "public bus": "公共汽车",
+            "all / both": "都",
+            "to arrive": "到",
+            "to ride": "骑",
+            "fast": "快",
+            "minute": "分钟",
+            "at once / right away": "就",
+            "campus": "校园",
+            "southeast": "东南",
+            "east": "东",
+            "two": "二",
+            "number": "号",
+            "room": "房间",
+            "how many / how much": "多少",
+            "room (shi)": "室",
+            "cell phone": "手机",
+            "number (phone)": "号码",
+            "to call / play": "打",
+            "telephone": "电话",
+            "to wait": "等"
+        };
+
+        // Chinese numbers data for listening game
+        const numbersData = [
+            { number: 0, hanzi: "零", pinyin: "líng" },
+            { number: 1, hanzi: "一", pinyin: "yī" },
+            { number: 2, hanzi: "二", pinyin: "èr" },
+            { number: 3, hanzi: "三", pinyin: "sān" },
+            { number: 4, hanzi: "四", pinyin: "sì" },
+            { number: 5, hanzi: "五", pinyin: "wǔ" },
+            { number: 6, hanzi: "六", pinyin: "liù" },
+            { number: 7, hanzi: "七", pinyin: "qī" },
+            { number: 8, hanzi: "八", pinyin: "bā" },
+            { number: 9, hanzi: "九", pinyin: "jiǔ" },
+            { number: 10, hanzi: "十", pinyin: "shí" }
+        ];
+
+        // Game templates for fill-in-blank exercises
+        const sentenceTemplates = [
+            { 
+                sentence: "我明天要坐<span class='blank' data-correct='公共汽车'></span>去学校。",
+                correct: "公共汽车",
+                options: ["公共汽车", "手机", "房间", "号码"],
+                pinyin: "Wǒ míngtiān yào zuò gōnggòng qìchē qù xuéxiào."
+            },
+            { 
+                sentence: "请告诉我你的<span class='blank' data-correct='电话号码'></span>。",
+                correct: "电话号码",
+                options: ["电话号码", "周末", "校园", "东南"],
+                pinyin: "Qǐng gàosù wǒ nǐ de diànhuà hàomǎ."
+            },
+            { 
+                sentence: "他在<span class='blank' data-correct='房间'></span>里学习。",
+                correct: "房间",
+                options: ["房间", "手机", "分钟", "路"],
+                pinyin: "Tā zài fángjiān lǐ xuéxí."
+            },
+            { 
+                sentence: "我们<span class='blank' data-correct='都'></span>喜欢这个电影。",
+                correct: "都",
+                options: ["都", "啊", "就", "和"],
+                pinyin: "Wǒmen dōu xǐhuān zhège diànyǐng."
+            },
+            { 
+                sentence: "请<span class='blank' data-correct='等'></span>我一下。",
+                correct: "等",
+                options: ["等", "打", "骑", "走"],
+                pinyin: "Qǐng děng wǒ yīxià."
+            }
+        ];
+
+        // Multiple blanks exercises
+        const multipleBlanksExercises = [
+            {
+                sentence: "我<span class='blank' data-correct='怎么'></span>去学校？我<span class='blank' data-correct='走'></span>这条<span class='blank' data-correct='路'></span>就能<span class='blank' data-correct='到'></span>。",
+                blanks: ["怎么", "走", "路", "到"],
+                options: ["怎么", "走", "路", "到", "快", "分钟", "和", "二"]
+            },
+            {
+                sentence: "我<span class='blank' data-correct='骑'></span>自行车，<span class='blank' data-correct='很'></span><span class='blank' data-correct='快'></span>，只要十<span class='blank' data-correct='分钟'></span>。",
+                blanks: ["骑", "很", "快", "分钟"],
+                options: ["骑", "很", "快", "分钟", "号码", "电话", "房间", "东南"]
+            }
+        ];
+
+        // Game state
+        const gameState = {
+            currentGame: 'listening',
+            listening: {
+                score: 0,
+                attempts: 0,
+                currentNumber: null,
+                selectedOption: null,
+                isAnswered: false
+            },
+            vocab: {
+                score: 0,
+                attempts: 0,
+                currentQuestion: null,
+                selectedOption: null,
+                isAnswered: false
+            },
+            fillblank: {
+                score: 0,
+                attempts: 0,
+                currentExercise: null,
+                selectedOption: null,
+                isAnswered: false
+            },
+            multiblank: {
+                score: 0,
+                attempts: 0,
+                currentExercise: null,
+                selectedOptions: {},
+                isAnswered: false
+            }
+        };
+
+        // DOM Elements
+        const gameButtons = document.querySelectorAll('.game-btn');
+        const gameContainers = document.querySelectorAll('.game-container');
+
+        // Initialize all games
+        function initAllGames() {
+            initListeningGame();
+            initVocabGame();
+            initFillBlankGame();
+            initMultipleBlanksGame();
+            
+            // Start with listening game
+            switchGame('listening');
+        }
+
+        // Game switching
+        gameButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const game = button.dataset.game;
+                switchGame(game);
+            });
+        });
+
+        function switchGame(game) {
+            // Update active button
+            gameButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-game="${game}"]`).classList.add('active');
+            
+            // Update active game container
+            gameContainers.forEach(container => container.classList.remove('active'));
+            document.getElementById(`${game}-game`).classList.add('active');
+            
+            gameState.currentGame = game;
+        }
+
+        // ========== LISTENING GAME ==========
+        function initListeningGame() {
+            const optionsContainer = document.getElementById('listening-options');
+            const submitBtn = document.getElementById('listening-submit');
+            const nextBtn = document.getElementById('listening-next');
+            const feedback = document.getElementById('listening-feedback');
+            const playConversationBtn = document.getElementById('play-conversation');
+            const playNumberBtn = document.getElementById('play-number');
+            
+            function newQuestion() {
+                gameState.listening.isAnswered = false;
+                gameState.listening.selectedOption = null;
+                
+                // Get random number
+                const randomIndex = Math.floor(Math.random() * numbersData.length);
+                gameState.listening.currentNumber = numbersData[randomIndex];
+                
+                // Update display
+                document.getElementById('listening-target').textContent = gameState.listening.currentNumber.hanzi;
+                document.getElementById('listening-pinyin').textContent = `Wǒ de diànhuà hàomǎ shì ${gameState.listening.currentNumber.pinyin}.`;
+                document.getElementById('listening-pinyin').style.display = 'none';
+                
+                // Generate options
+                const options = generateListeningOptions(gameState.listening.currentNumber);
+                optionsContainer.innerHTML = '';
+                
+                options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.value = option.hanzi;
+                    optionElement.dataset.correct = option.isCorrect;
+                    optionElement.textContent = option.hanzi;
+                    
+                    optionElement.addEventListener('click', () => {
+                        if (gameState.listening.isAnswered) return;
+                        
+                        document.querySelectorAll('#listening-options .option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        optionElement.classList.add('selected');
+                        gameState.listening.selectedOption = optionElement.dataset.value;
+                        submitBtn.disabled = false;
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                // Reset UI
+                submitBtn.disabled = true;
+                nextBtn.disabled = true;
+                feedback.className = 'feedback';
+                feedback.style.display = 'none';
+                document.getElementById('listening-pinyin').style.display = 'none';
+                
+                // Enable audio buttons
+                playConversationBtn.disabled = false;
+                playNumberBtn.disabled = false;
+            }
+            
+            function generateListeningOptions(correctNumber) {
+                const options = [
+                    { hanzi: correctNumber.hanzi, pinyin: correctNumber.pinyin, isCorrect: true }
+                ];
+                
+                const incorrectNumbers = numbersData.filter(num => num.hanzi !== correctNumber.hanzi);
+                for (let i = 0; i < 3; i++) {
+                    const randomIndex = Math.floor(Math.random() * incorrectNumbers.length);
+                    const incorrectNumber = incorrectNumbers.splice(randomIndex, 1)[0];
+                    options.push({
+                        hanzi: incorrectNumber.hanzi,
+                        pinyin: incorrectNumber.pinyin,
+                        isCorrect: false
+                    });
+                }
+                
+                return shuffleArray(options);
+            }
+            
+            submitBtn.addEventListener('click', () => {
+                if (gameState.listening.isAnswered || !gameState.listening.selectedOption) return;
+                
+                gameState.listening.isAnswered = true;
+                gameState.listening.attempts++;
+                
+                const isCorrect = gameState.listening.selectedOption === gameState.listening.currentNumber.hanzi;
+                
+                // Show pinyin
+                document.getElementById('listening-pinyin').style.display = 'block';
+                
+                // Disable audio buttons
+                playConversationBtn.disabled = true;
+                playNumberBtn.disabled = true;
+                
+                // Update options display
+                document.querySelectorAll('#listening-options .option').forEach(option => {
+                    option.style.pointerEvents = 'none';
+                    
+                    if (option.dataset.correct === 'true') {
+                        option.style.borderColor = '#9b59b6';
+                        option.style.background = 'rgba(155, 89, 182, 0.4)';
+                    }
+                    
+                    if (option.dataset.value === gameState.listening.selectedOption && !isCorrect) {
+                        option.style.borderColor = '#9370db';
+                        option.style.background = 'rgba(147, 112, 219, 0.4)';
+                    }
+                });
+                
+                // Show feedback
+                if (isCorrect) {
+                    gameState.listening.score++;
+                    feedback.textContent = `正确！(Correct!) 数字 ${gameState.listening.currentNumber.hanzi} 读作 "${gameState.listening.currentNumber.pinyin}"`;
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.textContent = `不对。(Incorrect.) 正确答案是: ${gameState.listening.currentNumber.hanzi} (${gameState.listening.currentNumber.pinyin})`;
+                    feedback.className = 'feedback incorrect';
+                }
+                
+                updateScoreDisplay('listening');
+                submitBtn.disabled = true;
+                nextBtn.disabled = false;
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                newQuestion();
+            });
+            
+            // Audio functions
+            playConversationBtn.addEventListener('click', () => {
+                const question = "请问，你的电话号码是多少？";
+                const answer = `我的电话号码是${gameState.listening.currentNumber.hanzi}`;
+                
+                playTextToSpeech(question, 'zh-CN', 0.8);
+                setTimeout(() => {
+                    playTextToSpeech(answer, 'zh-CN', 0.8);
+                }, 1500);
+            });
+            
+            playNumberBtn.addEventListener('click', () => {
+                if (gameState.listening.currentNumber) {
+                    playTextToSpeech(gameState.listening.currentNumber.hanzi, 'zh-CN', 0.8);
+                }
+            });
+            
+            newQuestion();
+        }
+
+        // ========== VOCABULARY GAME ==========
+        function initVocabGame() {
+            const questionElement = document.getElementById('vocab-question');
+            const optionsContainer = document.getElementById('vocab-options');
+            const submitBtn = document.getElementById('vocab-submit');
+            const nextBtn = document.getElementById('vocab-next');
+            const feedback = document.getElementById('vocab-feedback');
+            
+            function newQuestion() {
+                gameState.vocab.isAnswered = false;
+                gameState.vocab.selectedOption = null;
+                
+                // Get random vocabulary
+                const entries = Object.entries(vocabulary);
+                const randomIndex = Math.floor(Math.random() * entries.length);
+                const [meaning, hanzi] = entries[randomIndex];
+                
+                gameState.vocab.currentQuestion = { meaning, hanzi };
+                
+                // Update question
+                questionElement.textContent = `What is the Chinese character for "${meaning}"?`;
+                
+                // Generate options
+                const options = generateVocabOptions(hanzi);
+                optionsContainer.innerHTML = '';
+                
+                options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.value = option;
+                    optionElement.textContent = option;
+                    
+                    optionElement.addEventListener('click', () => {
+                        if (gameState.vocab.isAnswered) return;
+                        
+                        document.querySelectorAll('#vocab-options .option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        optionElement.classList.add('selected');
+                        gameState.vocab.selectedOption = optionElement.dataset.value;
+                        submitBtn.disabled = false;
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                // Reset UI
+                submitBtn.disabled = true;
+                nextBtn.disabled = true;
+                feedback.className = 'feedback';
+                feedback.style.display = 'none';
+            }
+            
+            function generateVocabOptions(correctHanzi) {
+                const options = [correctHanzi];
+                const allHanzi = Object.values(vocabulary);
+                const incorrectHanzi = allHanzi.filter(h => h !== correctHanzi);
+                
+                for (let i = 0; i < 3; i++) {
+                    const randomIndex = Math.floor(Math.random() * incorrectHanzi.length);
+                    const incorrectOption = incorrectHanzi.splice(randomIndex, 1)[0];
+                    options.push(incorrectOption);
+                }
+                
+                return shuffleArray(options);
+            }
+            
+            submitBtn.addEventListener('click', () => {
+                if (gameState.vocab.isAnswered || !gameState.vocab.selectedOption) return;
+                
+                gameState.vocab.isAnswered = true;
+                gameState.vocab.attempts++;
+                
+                const isCorrect = gameState.vocab.selectedOption === gameState.vocab.currentQuestion.hanzi;
+                
+                // Update options display
+                document.querySelectorAll('#vocab-options .option').forEach(option => {
+                    option.style.pointerEvents = 'none';
+                    
+                    if (option.dataset.value === gameState.vocab.currentQuestion.hanzi) {
+                        option.style.borderColor = '#9b59b6';
+                        option.style.background = 'rgba(155, 89, 182, 0.4)';
+                    }
+                    
+                    if (option.dataset.value === gameState.vocab.selectedOption && !isCorrect) {
+                        option.style.borderColor = '#9370db';
+                        option.style.background = 'rgba(147, 112, 219, 0.4)';
+                    }
+                });
+                
+                // Show feedback
+                if (isCorrect) {
+                    gameState.vocab.score++;
+                    feedback.textContent = `正确！(Correct!) "${gameState.vocab.currentQuestion.meaning}" = "${gameState.vocab.currentQuestion.hanzi}"`;
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.textContent = `不对。(Incorrect.) 正确答案是: "${gameState.vocab.currentQuestion.hanzi}"`;
+                    feedback.className = 'feedback incorrect';
+                }
+                
+                updateScoreDisplay('vocab');
+                submitBtn.disabled = true;
+                nextBtn.disabled = false;
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                newQuestion();
+            });
+            
+            newQuestion();
+        }
+
+        // ========== FILL IN BLANK GAME ==========
+        function initFillBlankGame() {
+            const sentenceElement = document.getElementById('fillblank-sentence');
+            const choicesContainer = document.getElementById('fillblank-choices');
+            const submitBtn = document.getElementById('fillblank-submit');
+            const nextBtn = document.getElementById('fillblank-next');
+            const feedback = document.getElementById('fillblank-feedback');
+            
+            function newExercise() {
+                gameState.fillblank.isAnswered = false;
+                gameState.fillblank.selectedOption = null;
+                
+                // Get random exercise
+                const randomIndex = Math.floor(Math.random() % sentenceTemplates.length);
+                gameState.fillblank.currentExercise = sentenceTemplates[randomIndex];
+                
+                // Update sentence
+                sentenceElement.innerHTML = gameState.fillblank.currentExercise.sentence;
+                
+                // Update choices
+                choicesContainer.innerHTML = '';
+                const shuffledOptions = shuffleArray([...gameState.fillblank.currentExercise.options]);
+                
+                shuffledOptions.forEach(option => {
+                    const choiceElement = document.createElement('div');
+                    choiceElement.className = 'blank-option';
+                    choiceElement.textContent = option;
+                    choiceElement.dataset.value = option;
+                    
+                    choiceElement.addEventListener('click', () => {
+                        if (gameState.fillblank.isAnswered || choiceElement.classList.contains('used')) return;
+                        
+                        const blank = sentenceElement.querySelector('.blank');
+                        if (blank && !blank.classList.contains('filled')) {
+                            blank.textContent = option;
+                            blank.classList.add('filled');
+                            choiceElement.classList.add('used');
+                            gameState.fillblank.selectedOption = option;
+                            submitBtn.disabled = false;
+                        }
+                    });
+                    
+                    choicesContainer.appendChild(choiceElement);
+                });
+                
+                // Reset UI
+                submitBtn.disabled = true;
+                nextBtn.disabled = true;
+                feedback.className = 'feedback';
+                feedback.style.display = 'none';
+            }
+            
+            submitBtn.addEventListener('click', () => {
+                if (gameState.fillblank.isAnswered || !gameState.fillblank.selectedOption) return;
+                
+                gameState.fillblank.isAnswered = true;
+                gameState.fillblank.attempts++;
+                
+                const blank = sentenceElement.querySelector('.blank');
+                const isCorrect = gameState.fillblank.selectedOption === gameState.fillblank.currentExercise.correct;
+                
+                // Show feedback
+                if (isCorrect) {
+                    gameState.fillblank.score++;
+                    feedback.textContent = `正确！(Correct!) "${gameState.fillblank.currentExercise.correct}" 是正确的答案。`;
+                    feedback.className = 'feedback correct';
+                    blank.style.borderColor = '#9b59b6';
+                    blank.style.background = 'rgba(155, 89, 182, 0.4)';
+                } else {
+                    feedback.textContent = `不对。(Incorrect.) 正确答案是: "${gameState.fillblank.currentExercise.correct}"`;
+                    feedback.className = 'feedback incorrect';
+                    blank.style.borderColor = '#9370db';
+                    blank.style.background = 'rgba(147, 112, 219, 0.4)';
+                    
+                    // Show correct answer
+                    const correctChoice = Array.from(choicesContainer.children).find(
+                        choice => choice.textContent === gameState.fillblank.currentExercise.correct
+                    );
+                    if (correctChoice) {
+                        correctChoice.style.border = '2px solid #9b59b6';
+                        correctChoice.style.background = 'rgba(155, 89, 182, 0.4)';
+                    }
+                }
+                
+                updateScoreDisplay('fillblank');
+                submitBtn.disabled = true;
+                nextBtn.disabled = false;
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                newExercise();
+            });
+            
+            newExercise();
+        }
+
+        // ========== MULTIPLE BLANKS GAME ==========
+        function initMultipleBlanksGame() {
+            const slotsContainer = document.getElementById('multiblank-slots');
+            const choicesContainer = document.getElementById('multiblank-choices');
+            const sentenceElement = document.getElementById('multiblank-sentence');
+            const submitBtn = document.getElementById('multiblank-submit');
+            const nextBtn = document.getElementById('multiblank-next');
+            const feedback = document.getElementById('multiblank-feedback');
+            
+            let currentExerciseIndex = 0;
+            
+            function loadExercise() {
+                gameState.multiblank.isAnswered = false;
+                gameState.multiblank.selectedOptions = {};
+                
+                gameState.multiblank.currentExercise = multipleBlanksExercises[currentExerciseIndex];
+                
+                // Update slots
+                slotsContainer.innerHTML = '';
+                gameState.multiblank.currentExercise.blanks.forEach((blank, index) => {
+                    const slot = document.createElement('div');
+                    slot.className = 'blank-slot';
+                    slot.dataset.index = index;
+                    slot.dataset.correct = blank;
+                    slot.textContent = '?';
+                    slotsContainer.appendChild(slot);
+                });
+                
+                // Update choices
+                choicesContainer.innerHTML = '';
+                const shuffledOptions = shuffleArray([...gameState.multiblank.currentExercise.options]);
+                
+                shuffledOptions.forEach(option => {
+                    const choice = document.createElement('div');
+                    choice.className = 'blank-option';
+                    choice.textContent = option;
+                    choice.dataset.value = option;
+                    
+                    choice.addEventListener('click', () => {
+                        if (gameState.multiblank.isAnswered) return;
+                        
+                        // Find first empty slot
+                        const emptySlot = Array.from(slotsContainer.children).find(slot => 
+                            !slot.classList.contains('filled')
+                        );
+                        
+                        if (emptySlot) {
+                            emptySlot.textContent = option;
+                            emptySlot.classList.add('filled');
+                            gameState.multiblank.selectedOptions[emptySlot.dataset.index] = option;
+                            choice.classList.add('used');
+                        }
+                    });
+                    
+                    choicesContainer.appendChild(choice);
+                });
+                
+                // Update sentence
+                sentenceElement.innerHTML = gameState.multiblank.currentExercise.sentence;
+                
+                // Reset feedback
+                feedback.className = 'feedback';
+                feedback.style.display = 'none';
+                nextBtn.disabled = true;
+            }
+            
+            submitBtn.addEventListener('click', () => {
+                if (gameState.multiblank.isAnswered) return;
+                
+                gameState.multiblank.isAnswered = true;
+                gameState.multiblank.attempts++;
+                
+                let correctCount = 0;
+                const slots = Array.from(slotsContainer.children);
+                
+                slots.forEach(slot => {
+                    const userAnswer = gameState.multiblank.selectedOptions[slot.dataset.index];
+                    const correctAnswer = slot.dataset.correct;
+                    
+                    if (userAnswer === correctAnswer) {
+                        slot.style.borderColor = '#9b59b6';
+                        slot.style.background = 'rgba(155, 89, 182, 0.4)';
+                        correctCount++;
+                    } else {
+                        slot.style.borderColor = '#9370db';
+                        slot.style.background = 'rgba(147, 112, 219, 0.4)';
+                        slot.textContent = correctAnswer;
+                    }
+                });
+                
+                // Calculate score
+                const isPerfect = correctCount === slots.length;
+                if (isPerfect) {
+                    gameState.multiblank.score++;
+                    feedback.textContent = `完美！(Perfect!) 所有答案都正确！`;
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.textContent = `你答对了 ${correctCount} 个，共 ${slots.length} 个。`;
+                    feedback.className = 'feedback incorrect';
+                }
+                
+                updateScoreDisplay('multiblank');
+                nextBtn.disabled = false;
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                currentExerciseIndex = (currentExerciseIndex + 1) % multipleBlanksExercises.length;
+                loadExercise();
+            });
+            
+            loadExercise();
+        }
+
+        // ========== HELPER FUNCTIONS ==========
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function updateScoreDisplay(gameType) {
+            const state = gameState[gameType];
+            const accuracy = state.attempts > 0 ? Math.round((state.score / state.attempts) * 100) : 0;
+            
+            document.getElementById(`${gameType}-correct`).textContent = state.score;
+            document.getElementById(`${gameType}-attempts`).textContent = state.attempts;
+            document.getElementById(`${gameType}-accuracy`).textContent = `${accuracy}%`;
+        }
+
+        function playTextToSpeech(text, lang = 'zh-CN', rate = 0.8) {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = rate;
+                speechSynthesis.speak(utterance);
+            } else {
+                alert("Your browser doesn't support speech synthesis. Try Chrome, Edge or Safari.");
+            }
+        }
+
+        // Initialize all games on load
+        window.addEventListener('load', initAllGames);
+    </script>
+</body>
+</html>

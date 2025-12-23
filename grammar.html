@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Boya Chinese Chapter 8 Grammar Game</title>
+
+<style>
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #6dd5ed, #2193b0);
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.container {
+    background: white;
+    width: 70%;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2 {
+    color: #2193b0;
+}
+
+#progress {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    background: #eee;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.progress-fill {
+    height: 15px;
+    background: linear-gradient(to right, #56ab2f, #a8e063);
+    width: 0%;
+    transition: width 0.4s;
+}
+
+#question {
+    font-size: 22px;
+    margin: 20px 0;
+}
+
+button {
+    padding: 12px 25px;
+    margin: 10px;
+    font-size: 17px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    background: #2193b0;
+    color: white;
+    transition: transform 0.2s, background 0.2s;
+}
+
+button:hover {
+    background: #176d87;
+    transform: scale(1.05);
+}
+
+.choice-btn {
+    background: #f1f9ff;
+    color: #333;
+    border: 2px solid #2193b0;
+}
+
+.choice-btn:hover {
+    background: #2193b0;
+    color: white;
+}
+
+.correct {
+    color: #2ecc71;
+    font-size: 18px;
+}
+
+.wrong {
+    color: #e74c3c;
+    font-size: 18px;
+}
+
+#score-box {
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+#restart {
+    background: #e67e22;
+}
+
+#restart:hover {
+    background: #cf711f;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>🎮 Boya Chinese – Chapter 8 Grammar Game</h2>
+
+<p id="progress"></p>
+
+<div class="progress-bar">
+    <div class="progress-fill" id="bar"></div>
+</div>
+
+<p id="question"></p>
+
+<div id="choices"></div>
+
+<p id="result"></p>
+
+<div id="score-box">
+⭐ Score: <span id="score">0</span>
+</div>
+
+<button onclick="nextQuestion()">Next</button>
+<button onclick="restartGame()" id="restart" class="hidden">Restart Game</button>
+</div>
+
+<script>
+const quiz = [
+ {q:"周末你有空___？", c:["呢","吗","就","很"], a:1},
+ {q:"我们___公共汽车去学校。", c:["骑","坐","打","走"], a:1},
+ {q:"从这儿到学校怎么___？", c:["走","到","来","坐"], a:0},
+ {q:"骑自行车很___，十五分钟就到。", c:["慢","快","多","少"], a:1},
+ {q:"坐地铁___坐公共汽车，都可以。", c:["和","吗","就","到"], a:0},
+ {q:"从学校到你家要___少分钟？", c:["多少","几","就","快"], a:0},
+ {q:"十分钟___到。", c:["就","才","再","很"], a:0},
+ {q:"我给你___电话。", c:["骑","坐","打","走"], a:2},
+ {q:"你的手机___码是多少？", c:["房间","电话","号码","号楼"], a:2},
+ {q:"我的宿舍在东五号楼502___。", c:["号","室","路","分"], a:1},
+ {q:"___走呢？坐公共汽车吧。", c:["怎么","多少","快","就"], a:0},
+ {q:"我没有手机，不过我的朋友___。", c:["没有","打","有","走"], a:2},
+ {q:"坐21路___106路公共汽车。", c:["吗","就","和","到"], a:2},
+ {q:"到学校___快。", c:["很","多少","几","就"], a:0},
+ {q:"我马上到，请你___我。", c:["骑","等","走","到"], a:1}
+];
+
+let index = 0;
+let score = 0;
+let answered = false;
+
+function loadQuestion() {
+ answered = false;
+ document.getElementById("result").innerHTML = "";
+ document.getElementById("progress").innerText =
+  `Question ${index + 1} / ${quiz.length}`;
+
+ document.getElementById("bar").style.width =
+  ((index) / quiz.length) * 100 + "%";
+
+ document.getElementById("question").innerText = quiz[index].q;
+
+ let html = "";
+ quiz[index].c.forEach((choice, i) => {
+   html += `<button class="choice-btn" onclick="checkAnswer(${i})">${choice}</button>`;
+ });
+ document.getElementById("choices").innerHTML = html;
+}
+
+function checkAnswer(choice) {
+ if (answered) return;
+ answered = true;
+
+ if (choice === quiz[index].a) {
+   document.getElementById("result").innerHTML = "✅ Correct!";
+   document.getElementById("result").className = "correct";
+   score++;
+ } else {
+   document.getElementById("result").innerHTML = "❌ Wrong!";
+   document.getElementById("result").className = "wrong";
+ }
+ document.getElementById("score").innerText = score;
+}
+
+function nextQuestion() {
+ if (!answered) return;
+ index++;
+ if (index < quiz.length) {
+   loadQuestion();
+ } else {
+   endGame();
+ }
+}
+
+function endGame() {
+ document.getElementById("question").innerText = "🎉 Game Finished!";
+ document.getElementById("choices").innerHTML = "";
+ document.getElementById("progress").innerText = "";
+ document.getElementById("bar").style.width = "100%";
+ document.getElementById("result").innerHTML =
+  `Final Score: ${score} / ${quiz.length}`;
+ document.getElementById("restart").classList.remove("hidden");
+}
+
+function restartGame() {
+ index = 0;
+ score = 0;
+ document.getElementById("score").innerText = score;
+ document.getElementById("restart").classList.add("hidden");
+ loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
